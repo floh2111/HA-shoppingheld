@@ -61,21 +61,29 @@ const SH_CSS = `
   .head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 16px 16px 4px; }
   .title { font-size: 20px; font-weight: 600; color: var(--primary-text-color); }
   .sub { font-size: 13px; color: var(--secondary-text-color); white-space: nowrap; }
+  /* Getönt statt vollflächig: In Themes mit heller Primärfarbe (z. B. Frosted Glass) wäre weißer Text
+     auf der Primärfarbe kaum lesbar. Fallback (ältere Browser ohne color-mix): neutrale Fläche. */
   .chip { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 10px; font-size: 12px;
-          background: var(--primary-color); color: var(--text-primary-color, #fff); }
+          background: var(--secondary-background-color); color: var(--primary-text-color);
+          border: 1px solid var(--primary-color);
+          background: color-mix(in srgb, var(--primary-color) 25%, transparent); }
   .add { display: flex; gap: 8px; padding: 8px 16px 4px; }
   .add input { flex: 1; min-width: 0; padding: 10px 12px; font-size: 15px; border-radius: 10px;
                border: 1px solid var(--divider-color); background: var(--card-background-color);
                color: var(--primary-text-color); outline: none; }
   .add input:focus { border-color: var(--primary-color); }
-  .add button { padding: 0 16px; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
-                background: var(--primary-color); color: var(--text-primary-color, #fff); }
+  .add button { padding: 0 16px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+                border: 1px solid var(--primary-color); color: var(--primary-text-color);
+                background: var(--secondary-background-color);
+                background: color-mix(in srgb, var(--primary-color) 25%, transparent); }
+  .add button:hover:not(:disabled) { background: color-mix(in srgb, var(--primary-color) 40%, transparent); }
   .add button:disabled { opacity: .5; cursor: default; }
   .error { margin: 6px 16px 0; font-size: 13px; color: var(--error-color, #db4437); }
   .list { padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
   .msg { padding: 24px 16px; text-align: center; color: var(--secondary-text-color); }
   .cat-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer;
                 padding: 10px 12px; border-radius: 12px; border-left: 4px solid var(--accent);
+                background: var(--secondary-background-color);
                 background: color-mix(in srgb, var(--bg) 55%, var(--card-background-color, #fff));
                 color: var(--primary-text-color); font-weight: 600; font-size: 14px; user-select: none; }
   .cat-count { font-size: 12px; font-weight: 500; opacity: .75; white-space: nowrap; }
