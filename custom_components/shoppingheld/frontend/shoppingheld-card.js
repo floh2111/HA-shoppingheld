@@ -49,6 +49,8 @@ const SH_TEXT = {
     more: 'Mehr',
     suggestion: 'Oft gekauft',
     basic: 'Basic',
+    fewer: 'weniger',
+    more_n: (n) => `+${n} mehr`,
   },
   en: {
     placeholder: 'Add item …',
@@ -66,6 +68,8 @@ const SH_TEXT = {
     more: 'More',
     suggestion: 'Often bought',
     basic: 'Basic',
+    fewer: 'fewer',
+    more_n: (n) => `+${n} more`,
   },
 };
 
@@ -101,12 +105,13 @@ const SH_CSS = `
     .fill { transition: none; }
     .progress.celebrate .fill::after, .progress.celebrate .ptext { animation: none; }
   }
-  /* Vorschlags-Chips: eine scrollbare Zeile über dem Eingabefeld */
-  .chips { display: flex; gap: 6px; overflow-x: auto; padding: 10px 16px 2px; scrollbar-width: none; }
-  .chips::-webkit-scrollbar { display: none; }
-  .sug { flex: none; padding: 5px 11px; border-radius: 16px; font-size: 13px; cursor: pointer; white-space: nowrap;
+  /* Vorschlags-Chips über dem Eingabefeld: umbrechen statt seitlich abgeschnitten zu werden; zu lange Namen werden gekürzt */
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px 2px; }
+  .sug { max-width: 100%; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; padding: 5px 11px;
+         border-radius: 16px; font-size: 13px; cursor: pointer; white-space: nowrap;
          color: var(--primary-text-color); background: var(--secondary-background-color);
          border: 1px solid var(--divider-color); }
+  .sug.more { border-style: dotted; color: var(--secondary-text-color); }
   .sug:hover { border-color: var(--primary-color); }
   .sug.often { border-style: dashed; }
   .add { display: flex; gap: 8px; padding: 8px 16px 4px; }
@@ -171,6 +176,7 @@ class ShoppingHeldCard extends HTMLElement {
     this._pending = new Map(); // Artikel-ID -> optimistisch angezeigter checked-Zustand
     this._pendingAmount = new Map(); // Artikel-ID -> { value, ts }: optimistisch angezeigte Menge
     this._removed = new Set(); // Artikel-IDs, die gelöscht wurden und bis zum Server-Stand ausgeblendet bleiben
+    this._chipsExpanded = false; // alle Vorschläge zeigen statt nur die ersten
     this._chipPending = new Set(); // Vorschläge, die gerade hinzugefügt werden (bis zum Server-Stand ausgeblendet)
     this._dragging = false; // gerade wird eine Zeile gewischt: Neuzeichnen zurückstellen
     this._renderPending = false;
@@ -412,7 +418,9 @@ class ShoppingHeldCard extends HTMLElement {
     };
     collect(attrs.basics, false);
     collect(attrs.suggestions, true);
-    for (const chip of chips.slice(0, 20)) {
+    const LIMIT = 6;
+    const shown = this._chipsExpanded ? chips.slice(0, 40) : chips.slice(0, LIMIT);
+    for (const chip of shown) {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = `sug${chip.often ? ' often' : ''}`;
@@ -420,6 +428,17 @@ class ShoppingHeldCard extends HTMLElement {
       button.textContent = `${chip.often ? '💡' : '+'} ${chip.text}`;
       button.addEventListener('click', () => this._addChip(chip));
       box.append(button);
+    }
+    if (chips.length > LIMIT) {
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'sug more';
+      toggle.textContent = this._chipsExpanded ? this._t('fewer') : `${this._t('more_n')(chips.length - LIMIT)}`;
+      toggle.addEventListener('click', () => {
+        this._chipsExpanded = !this._chipsExpanded;
+        this._render();
+      });
+      box.append(toggle);
     }
     box.hidden = chips.length === 0;
   }

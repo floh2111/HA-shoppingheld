@@ -7,7 +7,7 @@ from datetime import timedelta
 DOMAIN = "shoppingheld"
 # Muss mit "version" in manifest.json übereinstimmen (wird für den Cache-Buster der Karte genutzt,
 # ein Test prüft die Übereinstimmung).
-VERSION = "0.1.5"
+VERSION = "0.1.6"
 
 CONF_URL = "url"
 # Vorbelegung der Server-Adresse im Einrichtungsformular (änderbar, z. B. für eine eigene Instanz)

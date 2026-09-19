@@ -79,7 +79,7 @@ hide_chips: false         # true = Vorschlags-Chips ausblenden
   löscht ihn, mit **− / +** änderst du die Menge.
 - Über dem Eingabefeld stehen **Vorschlags-Chips**: deine Basics (`+ Milch`) und oft gekaufte
   Artikel (`💡 Kaffee`) – ein Tipp legt sie auf die Liste. Was schon offen auf der Liste steht,
-  wird nicht vorgeschlagen.
+  wird nicht vorgeschlagen. Es werden die ersten sechs gezeigt, „+N mehr“ klappt den Rest auf.
 - Kategorien lassen sich auf- und zuklappen; ist in einer Kategorie alles abgehakt, wird sie
   ausgegraut.
 - Ins Eingabefeld kann auch z. B. `2 Milch` geschrieben werden – die Menge wird erkannt.
