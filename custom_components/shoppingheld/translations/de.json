@@ -40,6 +40,22 @@
       "next_shopping_day": {
         "name": "Nächster Einkaufstag"
       }
+    },
+    "binary_sensor": {
+      "shopping_day_today": {
+        "name": "Einkaufstag heute"
+      },
+      "shopping_day_tomorrow": {
+        "name": "Einkaufstag morgen"
+      }
+    },
+    "button": {
+      "add_basics": {
+        "name": "Basics hinzufügen"
+      },
+      "clear_checked": {
+        "name": "Abgehakte löschen"
+      }
     }
   },
   "selector": {
@@ -83,6 +99,34 @@
         "category": {
           "name": "Kategorie",
           "description": "Optional; sonst automatisch erkannt."
+        }
+      }
+    },
+    "set_amount": {
+      "name": "Menge ändern",
+      "description": "Setzt die Menge eines Artikels auf der ShoppingHeld-Einkaufsliste.",
+      "fields": {
+        "item": {
+          "name": "Artikel",
+          "description": "Name des Artikels (oder seine interne ID)."
+        },
+        "amount": {
+          "name": "Menge",
+          "description": "Neue Anzahl (1–99)."
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Abfrageintervall",
+        "description": "Wie oft soll Home Assistant die Liste bei ShoppingHeld abfragen? Ein größeres Intervall schont den Server, Änderungen aus der App erscheinen dann etwas später.",
+        "data": {
+          "scan_interval": "Abfrageintervall"
+        },
+        "data_description": {
+          "scan_interval": "In Sekunden (30–300). Standard: 60."
         }
       }
     }

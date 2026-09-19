@@ -16,7 +16,12 @@ from .api import ShoppingHeldClient
 from .const import CARD_URL_PATH, CONF_TOKEN, CONF_URL, DOMAIN, VERSION
 from .coordinator import ShoppingHeldConfigEntry, ShoppingHeldCoordinator
 
-PLATFORMS: list[Platform] = [Platform.TODO, Platform.SENSOR]
+PLATFORMS: list[Platform] = [
+    Platform.BINARY_SENSOR,
+    Platform.BUTTON,
+    Platform.SENSOR,
+    Platform.TODO,
+]
 
 FRONTEND_DIR = Path(__file__).parent / "frontend"
 

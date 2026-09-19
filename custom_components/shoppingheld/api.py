@@ -131,3 +131,43 @@ class ShoppingHeldClient:
 
     async def async_delete_item(self, item_id: int) -> None:
         await self._action("delete", id=item_id)
+
+    async def async_set_amount(self, item_id: int, amount: int) -> None:
+        await self._action("set_amount", id=item_id, amount=amount)
+
+    async def async_add_basics(self) -> int:
+        """Legt alle Basics auf die Liste; gibt zurück, wie viele Artikel dazugekommen sind."""
+        data = await self._action("add_basics")
+        return int(data.get("added", 0)) if isinstance(data, dict) else 0
+
+    async def async_clear_checked(self) -> None:
+        await self._action("clear_checked")
+
+    async def async_get_basics(self) -> list[dict[str, str]]:
+        """Die als Basics markierten Artikel: [{"text": Anzeigename, "category": ...}]."""
+        data = await self._action("get_user_basics")
+        if not isinstance(data, list):
+            raise ShoppingHeldError("Unerwartete Antwort beim Laden der Basics")
+        basics = []
+        for row in data:
+            if not isinstance(row, dict):
+                continue
+            text = (row.get("singular") or row.get("item_text") or "").strip()
+            if text:
+                category = row.get("category")
+                basics.append(
+                    {"text": text, "category": category if category in CATEGORIES else DEFAULT_CATEGORY}
+                )
+        return basics
+
+    async def async_get_suggestions(self) -> list[dict[str, str]]:
+        """Automatische Basics-Vorschläge (oft gekauft, noch kein Basic): [{"text": ...}]."""
+        data = await self._action("get_basics_suggestions")
+        rows = data.get("suggestions") if isinstance(data, dict) else None
+        if not isinstance(rows, list):
+            raise ShoppingHeldError("Unerwartete Antwort beim Laden der Vorschläge")
+        return [
+            {"text": (row.get("label") or row.get("item_text") or "").strip()}
+            for row in rows
+            if isinstance(row, dict) and (row.get("label") or row.get("item_text"))
+        ]

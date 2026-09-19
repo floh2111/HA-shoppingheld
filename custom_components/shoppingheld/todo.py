@@ -31,6 +31,11 @@ ADD_ITEM_SCHEMA: dict[Any, Any] = {
     vol.Optional("category"): vol.In(CATEGORIES),
 }
 
+SET_AMOUNT_SCHEMA: dict[Any, Any] = {
+    vol.Required("item"): cv.string,
+    vol.Required("amount"): vol.All(vol.Coerce(int), vol.Range(min=1, max=99)),
+}
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -41,6 +46,7 @@ async def async_setup_entry(
     async_add_entities([ShoppingHeldTodoList(entry.runtime_data)])
     platform = entity_platform.async_get_current_platform()
     platform.async_register_entity_service("add_item", ADD_ITEM_SCHEMA, "async_add_item_service")
+    platform.async_register_entity_service("set_amount", SET_AMOUNT_SCHEMA, "async_set_amount_service")
 
 
 class ShoppingHeldTodoList(ShoppingHeldEntity, TodoListEntity):
@@ -54,7 +60,9 @@ class ShoppingHeldTodoList(ShoppingHeldEntity, TodoListEntity):
     )
     # Die Artikelliste steckt zusätzlich als Attribut für die Dashboard-Karte im State - nicht in
     # die Langzeit-Statistik/Datenbank schreiben (würde bei jeder Änderung ein neues Datenpaket sein).
-    _unrecorded_attributes = frozenset({"items", "categories", "shopping_days"})
+    _unrecorded_attributes = frozenset(
+        {"items", "categories", "shopping_days", "basics", "suggestions"}
+    )
 
     def __init__(self, coordinator: ShoppingHeldCoordinator) -> None:
         super().__init__(coordinator)
@@ -76,13 +84,12 @@ class ShoppingHeldTodoList(ShoppingHeldEntity, TodoListEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Rohdaten (mit Kategorie) für die ShoppingHeld-Dashboard-Karte."""
         data = self.coordinator.data
-        days = [
-            int(day) for day in str(data.settings.get("shopping_days") or "").split(",") if day.strip().isdigit()
-        ]
         return {
             "source": DOMAIN,
             "list_name": data.settings.get("list_name") or "Einkaufsliste",
-            "shopping_days": days,
+            "shopping_days": sorted(data.shopping_days),
+            "basics": data.basics,
+            "suggestions": data.suggestions,
             "categories": CATEGORY_LABELS,
             "items": [
                 {
@@ -128,6 +135,22 @@ class ShoppingHeldTodoList(ShoppingHeldEntity, TodoListEntity):
         if amount is None:
             amount, item = parse_item_text(item)
         await self._add(item, amount, unit, category)
+
+    async def async_set_amount_service(self, item: str, amount: int) -> None:
+        """Service shoppingheld.set_amount: Menge eines Artikels (per ID oder Name) ändern."""
+        wanted = item.strip()
+        items = self.coordinator.data.items
+        current = next((i for i in items if str(i["id"]) == wanted), None)
+        if current is None:  # Name: offenen Artikel bevorzugen
+            matches = [i for i in items if str(i.get("text", "")).lower() == wanted.lower()]
+            current = next((i for i in matches if not i.get("checked")), matches[0] if matches else None)
+        if current is None:
+            raise ServiceValidationError(f"Artikel \"{wanted}\" nicht gefunden.")
+        try:
+            await self.coordinator.client.async_set_amount(current["id"], amount)
+        except ShoppingHeldError as err:
+            raise HomeAssistantError(f"Menge konnte nicht geändert werden: {err}") from err
+        await self.coordinator.async_refresh()
 
     async def async_update_todo_item(self, item: TodoItem) -> None:
         current = next(

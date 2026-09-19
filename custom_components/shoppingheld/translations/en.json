@@ -40,6 +40,22 @@
       "next_shopping_day": {
         "name": "Next shopping day"
       }
+    },
+    "binary_sensor": {
+      "shopping_day_today": {
+        "name": "Shopping day today"
+      },
+      "shopping_day_tomorrow": {
+        "name": "Shopping day tomorrow"
+      }
+    },
+    "button": {
+      "add_basics": {
+        "name": "Add basics"
+      },
+      "clear_checked": {
+        "name": "Delete checked items"
+      }
     }
   },
   "selector": {
@@ -83,6 +99,34 @@
         "category": {
           "name": "Category",
           "description": "Optional; detected automatically if omitted."
+        }
+      }
+    },
+    "set_amount": {
+      "name": "Change amount",
+      "description": "Sets the amount of an item on the ShoppingHeld shopping list.",
+      "fields": {
+        "item": {
+          "name": "Item",
+          "description": "Name of the item (or its internal ID)."
+        },
+        "amount": {
+          "name": "Amount",
+          "description": "New amount (1–99)."
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Polling interval",
+        "description": "How often should Home Assistant fetch the list from ShoppingHeld? A longer interval is easier on the server, but changes made in the app show up a bit later.",
+        "data": {
+          "scan_interval": "Polling interval"
+        },
+        "data_description": {
+          "scan_interval": "In seconds (30–300). Default: 60."
         }
       }
     }

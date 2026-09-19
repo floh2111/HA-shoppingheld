@@ -64,6 +64,12 @@ class FakeServer:
         self.next_id = 100
         self.status = 200  # z.B. 401 zum Testen widerrufener Token
         self.guess = {"milch": "milch", "eier": "milch"}
+        self.basics = [
+            {"item_text": "milch", "category": "milch", "singular": "Milch", "plural": "Milch"},
+            {"item_text": "eier", "category": "milch", "singular": None, "plural": None},
+        ]
+        self.suggestions = [{"item_text": "kaffee", "label": "Kaffee"}]
+        self.optional_failing = False  # Basics/Vorschläge liefern 403 (z. B. älterer Server)
 
     async def handle_get(self, method: str, url: Any, data: Any):
         if self.status != 200:
@@ -101,6 +107,38 @@ class FakeServer:
         if action == "delete":
             self.items = [i for i in self.items if i["id"] != data["id"]]
             return AiohttpClientMockResponse(method, url, json={"success": True})
+        if action == "set_amount":
+            for item in self.items:
+                if item["id"] == data["id"]:
+                    item["amount"] = data["amount"]
+            return AiohttpClientMockResponse(method, url, json={"success": True})
+        if action == "clear_checked":
+            self.items = [i for i in self.items if not i["checked"]]
+            return AiohttpClientMockResponse(method, url, json={"success": True})
+        if action == "add_basics":
+            added = 0
+            for basic in self.basics:
+                self.next_id += 1
+                self.items.append(
+                    {
+                        "id": self.next_id,
+                        "text": basic["singular"] or basic["item_text"],
+                        "amount": 1,
+                        "unit": "",
+                        "category": basic["category"],
+                        "checked": False,
+                    }
+                )
+                added += 1
+            return AiohttpClientMockResponse(method, url, json={"success": True, "added": added})
+        if action in ("get_user_basics", "get_basics_suggestions"):
+            if self.optional_failing:
+                return AiohttpClientMockResponse(
+                    method, url, status=403, json={"error": "Diese Aktion ist mit einem Zugangs-Token nicht erlaubt."}
+                )
+            if action == "get_user_basics":
+                return AiohttpClientMockResponse(method, url, json=deepcopy(self.basics))
+            return AiohttpClientMockResponse(method, url, json={"suggestions": deepcopy(self.suggestions)})
         return AiohttpClientMockResponse(method, url, status=400, json={"error": f"Unbekannte Aktion: {action}"})
 
 

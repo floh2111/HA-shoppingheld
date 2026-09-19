@@ -43,3 +43,23 @@ add_item:
             - koerperpflege
             - katzenfutter
             - sonstiges
+
+set_amount:
+  target:
+    entity:
+      integration: shoppingheld
+      domain: todo
+  fields:
+    item:
+      required: true
+      example: "Milch"
+      selector:
+        text:
+    amount:
+      required: true
+      example: 3
+      selector:
+        number:
+          min: 1
+          max: 99
+          mode: box

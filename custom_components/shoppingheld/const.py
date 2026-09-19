@@ -7,16 +7,23 @@ from datetime import timedelta
 DOMAIN = "shoppingheld"
 # Muss mit "version" in manifest.json übereinstimmen (wird für den Cache-Buster der Karte genutzt,
 # ein Test prüft die Übereinstimmung).
-VERSION = "0.1.3"
+VERSION = "0.1.4"
 
 CONF_URL = "url"
 # Vorbelegung der Server-Adresse im Einrichtungsformular (änderbar, z. B. für eine eigene Instanz)
 DEFAULT_URL = "https://shoppingheld.flohcloud.de"
 CONF_TOKEN = "token"
 
-SCAN_INTERVAL = timedelta(seconds=60)
+CONF_SCAN_INTERVAL = "scan_interval"
+DEFAULT_SCAN_INTERVAL = 60  # Sekunden
+MIN_SCAN_INTERVAL = 30
+MAX_SCAN_INTERVAL = 300
 # Einstellungen (Einkaufstage, Listenname) ändern sich selten - nicht bei jeder Abfrage neu holen
 SETTINGS_REFRESH_INTERVAL = timedelta(minutes=30)
+
+# Ereignisse auf dem HA-Ereignisbus (für Automationen)
+EVENT_ITEM_ADDED = f"{DOMAIN}_item_added"
+EVENT_LIST_COMPLETED = f"{DOMAIN}_list_completed"
 
 CARD_URL_PATH = "/shoppingheld_static/shoppingheld-card.js"
 

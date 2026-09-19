@@ -9,8 +9,15 @@ from urllib.parse import urlparse
 
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlowWithReload,
+)
+from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.selector import NumberSelector, NumberSelectorConfig, NumberSelectorMode
 
 from .api import (
     ShoppingHeldAuthError,
@@ -19,7 +26,16 @@ from .api import (
     ShoppingHeldError,
     normalize_url,
 )
-from .const import CONF_TOKEN, CONF_URL, DEFAULT_URL, DOMAIN
+from .const import (
+    CONF_SCAN_INTERVAL,
+    CONF_TOKEN,
+    CONF_URL,
+    DEFAULT_SCAN_INTERVAL,
+    DEFAULT_URL,
+    DOMAIN,
+    MAX_SCAN_INTERVAL,
+    MIN_SCAN_INTERVAL,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,6 +44,11 @@ class ShoppingHeldConfigFlow(ConfigFlow, domain=DOMAIN):
     """Fragt Adresse und Token ab und prüft sie gegen den Server."""
 
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> ShoppingHeldOptionsFlow:
+        return ShoppingHeldOptionsFlow()
 
     async def _validate(self, url: str, token: str) -> tuple[dict[str, Any] | None, str | None]:
         """Gibt (Einstellungen, Fehlerschlüssel) zurück."""
@@ -103,3 +124,26 @@ class ShoppingHeldConfigFlow(ConfigFlow, domain=DOMAIN):
             description_placeholders={"title": entry.title},
             errors=errors,
         )
+
+
+class ShoppingHeldOptionsFlow(OptionsFlowWithReload):
+    """Abfrageintervall einstellen (mehr Sekunden = weniger Last auf dem Server)."""
+
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        if user_input is not None:
+            return self.async_create_entry(data={CONF_SCAN_INTERVAL: int(user_input[CONF_SCAN_INTERVAL])})
+        current = self.config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_SCAN_INTERVAL, default=current): NumberSelector(
+                    NumberSelectorConfig(
+                        min=MIN_SCAN_INTERVAL,
+                        max=MAX_SCAN_INTERVAL,
+                        step=10,
+                        unit_of_measurement="s",
+                        mode=NumberSelectorMode.SLIDER,
+                    )
+                )
+            }
+        )
+        return self.async_show_form(step_id="init", data_schema=schema)

@@ -12,7 +12,7 @@ from homeassistant.util import dt as dt_util
 
 from .const import WEEKDAY_NAMES_DE
 from .coordinator import ShoppingHeldConfigEntry, ShoppingHeldCoordinator
-from .entity import ShoppingHeldEntity
+from .entity import ShoppingHeldDayEntity, ShoppingHeldEntity, app_weekday
 
 PARALLEL_UPDATES = 0
 
@@ -50,12 +50,7 @@ class OpenItemsSensor(ShoppingHeldEntity, SensorEntity):
         }
 
 
-def _app_weekday(day: date) -> int:
-    """Wochentag im Schema der App (0 = Sonntag ... 6 = Samstag)."""
-    return (day.weekday() + 1) % 7
-
-
-class NextShoppingDaySensor(ShoppingHeldEntity, SensorEntity):
+class NextShoppingDaySensor(ShoppingHeldDayEntity, SensorEntity):
     """Nächster Einkaufstag laut Einstellungen der Liste (heute zählt mit)."""
 
     _attr_translation_key = "next_shopping_day"
@@ -66,18 +61,14 @@ class NextShoppingDaySensor(ShoppingHeldEntity, SensorEntity):
         super().__init__(coordinator)
         self._attr_unique_id = f"{coordinator.config_entry.entry_id}_next_shopping_day"
 
-    def _shopping_days(self) -> set[int]:
-        raw = str(self.coordinator.data.settings.get("shopping_days") or "")
-        return {int(day) for day in raw.split(",") if day.strip().isdigit()}
-
     def _next_date(self) -> date | None:
-        days = self._shopping_days()
+        days = self.coordinator.data.shopping_days
         if not days:
             return None
         today = dt_util.now().date()
         for offset in range(8):
             candidate = today + timedelta(days=offset)
-            if _app_weekday(candidate) in days:
+            if app_weekday(candidate) in days:
                 return candidate
         return None
 
@@ -92,7 +83,7 @@ class NextShoppingDaySensor(ShoppingHeldEntity, SensorEntity):
             return {}
         today = dt_util.now().date()
         return {
-            "weekday": WEEKDAY_NAMES_DE[_app_weekday(next_date)],
+            "weekday": WEEKDAY_NAMES_DE[app_weekday(next_date)],
             "days_until": (next_date - today).days,
             "is_today": next_date == today,
         }

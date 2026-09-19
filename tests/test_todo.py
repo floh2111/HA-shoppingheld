@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
+
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry, async_fire_time_changed
 
@@ -11,7 +13,9 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.util import dt as dt_util
 
-from custom_components.shoppingheld.const import DOMAIN, SCAN_INTERVAL
+from custom_components.shoppingheld.const import DEFAULT_SCAN_INTERVAL, DOMAIN
+
+SCAN_INTERVAL = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
 
 from .conftest import TOKEN, FakeServer
 
