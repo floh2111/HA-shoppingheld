@@ -9,7 +9,7 @@
           "token": "Zugangs-Token"
         },
         "data_description": {
-          "url": "z. B. https://shoppingheld.example.org"
+          "url": "z. B. {example}"
         }
       },
       "reauth_confirm": {

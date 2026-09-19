@@ -75,6 +75,7 @@ class ShoppingHeldConfigFlow(ConfigFlow, domain=DOMAIN):
                 schema, user_input or {CONF_URL: "https://"}
             ),
             errors=errors,
+            description_placeholders={"example": "https://shoppingheld.example.org"},
         )
 
     async def async_step_reauth(self, entry_data: Mapping[str, Any]) -> ConfigFlowResult:

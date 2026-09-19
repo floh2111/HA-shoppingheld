@@ -8,6 +8,7 @@ from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.typing import ConfigType
 
@@ -18,6 +19,8 @@ from .coordinator import ShoppingHeldConfigEntry, ShoppingHeldCoordinator
 PLATFORMS: list[Platform] = [Platform.TODO, Platform.SENSOR]
 
 FRONTEND_DIR = Path(__file__).parent / "frontend"
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)  # Einrichtung nur über die Oberfläche
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
