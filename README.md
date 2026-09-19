@@ -6,6 +6,9 @@ Sensoren, Buttons, Ereignisse für Automationen und eine **Dashboard-Karte**, di
 wie die App – nach Kategorien gruppiert, mit Fortschrittsbalken, Wischen zum Löschen und
 Vorschlags-Chips.
 
+> **Hinweis:** Diese Integration ist eine **private Anbindung** an einen einzelnen ShoppingHeld-Server und
+> nicht für die allgemeine Nutzung gedacht. Zugangs-Token gibt es nur für das Konto des Betreibers.
+
 *English: custom integration for the ShoppingHeld shopping-list service – to-do list, sensors,
 `shoppingheld.add_item` service and a category-grouped dashboard card. Setup instructions below
 are in German; the UI strings are available in German and English.*
@@ -48,14 +51,13 @@ Assistant kopieren (z. B. über das Samba- oder SSH-Add-on) und neu starten.
 
 ## Einrichtung
 
-1. **Zugangs-Token erzeugen:** in der ShoppingHeld-Web-App unter
-   *Einstellungen → Benutzerdaten → 🏠 Home Assistant* auf „Neuen Token erzeugen“ tippen und den
-   angezeigten Token kopieren (er wird nur einmal angezeigt).
+1. **Zugangs-Token besorgen:** Der Token wird vom Betreiber des ShoppingHeld-Servers ausgestellt – die
+   App selbst bietet dafür keine Oberfläche. Er wird nur einmal angezeigt.
 2. In Home Assistant **Einstellungen → Geräte & Dienste → Integration hinzufügen → ShoppingHeld**.
 3. Den Token eintragen. Die Server-Adresse ist bereits vorausgefüllt und muss nur geändert werden, wenn du eine eigene ShoppingHeld-Instanz nutzt.
 
 Der Token erlaubt nur den Zugriff auf deine Einkaufsliste (Artikel lesen, hinzufügen, abhaken,
-löschen, Menge ändern, Basics) – nicht auf dein Konto – und lässt sich in der App jederzeit widerrufen. Ist er ungültig,
+löschen, Menge ändern, Basics) – nicht auf dein Konto – und lässt sich jederzeit widerrufen. Ist er ungültig,
 fordert Home Assistant dich über „Neu authentifizieren“ zu einem neuen Token auf.
 
 ## Dashboard-Karte

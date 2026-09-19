@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Connect ShoppingHeld",
-        "description": "Enter your personal access token. Create it in the ShoppingHeld web app under Settings → User data → Home Assistant. The server address is already filled in.",
+        "description": "Enter your personal access token. The token is issued by the operator of the ShoppingHeld server. The server address is already filled in.",
         "data": {
           "url": "Server address",
           "token": "Access token"
@@ -14,7 +14,7 @@
       },
       "reauth_confirm": {
         "title": "Enter a new access token",
-        "description": "The access token for {title} is invalid or was revoked. Create a new one in the ShoppingHeld web app and enter it here.",
+        "description": "The access token for {title} is invalid or was revoked. Ask for a new one and enter it here.",
         "data": {
           "token": "Access token"
         }
