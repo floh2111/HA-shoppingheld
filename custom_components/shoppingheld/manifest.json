@@ -1,0 +1,13 @@
+{
+  "domain": "shoppingheld",
+  "name": "ShoppingHeld",
+  "codeowners": ["@floh2111"],
+  "config_flow": true,
+  "dependencies": ["http", "frontend"],
+  "documentation": "https://github.com/floh2111/HA-shoppingheld",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/floh2111/HA-shoppingheld/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

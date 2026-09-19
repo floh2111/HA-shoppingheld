@@ -1,0 +1,90 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ShoppingHeld verbinden",
+        "description": "Trage die Adresse deiner ShoppingHeld-Instanz und einen persönlichen Zugangs-Token ein. Den Token erzeugst du in der ShoppingHeld-Web-App unter Einstellungen → Benutzerdaten → Home Assistant.",
+        "data": {
+          "url": "Server-Adresse",
+          "token": "Zugangs-Token"
+        },
+        "data_description": {
+          "url": "z. B. https://shoppingheld.example.org"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Neuen Zugangs-Token eintragen",
+        "description": "Der Zugangs-Token für {title} ist ungültig oder wurde widerrufen. Erzeuge in der ShoppingHeld-Web-App einen neuen und trage ihn hier ein.",
+        "data": {
+          "token": "Zugangs-Token"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Server nicht erreichbar. Adresse und Internetverbindung prüfen.",
+      "invalid_auth": "Zugangs-Token ungültig oder widerrufen.",
+      "invalid_url": "Ungültige Adresse.",
+      "unknown": "Unerwarteter Fehler."
+    },
+    "abort": {
+      "already_configured": "Diese Liste ist bereits eingerichtet.",
+      "reauth_successful": "Neuer Zugangs-Token gespeichert.",
+      "wrong_account": "Der Token gehört zu einem anderen Konto."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "open_items": {
+        "name": "Offene Artikel"
+      },
+      "next_shopping_day": {
+        "name": "Nächster Einkaufstag"
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "gemuese": "Obst & Gemüse",
+        "cerealien": "Cerealien & Brotaufstrich",
+        "brot": "Brot & Backwaren",
+        "kaffee": "Kaffee/Tee",
+        "knabber": "Knabberzeug & Süßes",
+        "fleisch": "Fleisch & Wurst",
+        "konserven": "Konserven & Saucen",
+        "milch": "Kühltheke",
+        "milchprodukte": "Milchprodukte",
+        "tk": "TK-Produkte",
+        "getraenke": "Getränke",
+        "haushalt": "Haushalt",
+        "koerperpflege": "Körperpflege",
+        "katzenfutter": "Katzenfutter",
+        "sonstiges": "Sonstiges"
+      }
+    }
+  },
+  "services": {
+    "add_item": {
+      "name": "Artikel hinzufügen",
+      "description": "Fügt einen Artikel zur ShoppingHeld-Einkaufsliste hinzu. Ohne Kategorie erkennt ShoppingHeld sie automatisch; \"2 Milch\" als Text setzt die Menge automatisch.",
+      "fields": {
+        "item": {
+          "name": "Artikel",
+          "description": "Name des Artikels."
+        },
+        "amount": {
+          "name": "Menge",
+          "description": "Anzahl (1–99), Standard 1."
+        },
+        "unit": {
+          "name": "Einheit",
+          "description": "Optionale Einheit, z. B. Packung."
+        },
+        "category": {
+          "name": "Kategorie",
+          "description": "Optional; sonst automatisch erkannt."
+        }
+      }
+    }
+  }
+}

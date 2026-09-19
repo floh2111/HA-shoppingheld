@@ -1,0 +1,90 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect ShoppingHeld",
+        "description": "Enter the address of your ShoppingHeld instance and a personal access token. Create the token in the ShoppingHeld web app under Settings → User data → Home Assistant.",
+        "data": {
+          "url": "Server address",
+          "token": "Access token"
+        },
+        "data_description": {
+          "url": "e.g. https://shoppingheld.example.org"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Enter a new access token",
+        "description": "The access token for {title} is invalid or was revoked. Create a new one in the ShoppingHeld web app and enter it here.",
+        "data": {
+          "token": "Access token"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot reach the server. Check the address and your connection.",
+      "invalid_auth": "Access token invalid or revoked.",
+      "invalid_url": "Invalid address.",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "already_configured": "This list is already configured.",
+      "reauth_successful": "New access token saved.",
+      "wrong_account": "The token belongs to a different account."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "open_items": {
+        "name": "Open items"
+      },
+      "next_shopping_day": {
+        "name": "Next shopping day"
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "gemuese": "Fruit & vegetables",
+        "cerealien": "Cereals & spreads",
+        "brot": "Bread & bakery",
+        "kaffee": "Coffee & tea",
+        "knabber": "Snacks & sweets",
+        "fleisch": "Meat & sausage",
+        "konserven": "Canned goods & sauces",
+        "milch": "Chilled section",
+        "milchprodukte": "Dairy",
+        "tk": "Frozen",
+        "getraenke": "Drinks",
+        "haushalt": "Household",
+        "koerperpflege": "Personal care",
+        "katzenfutter": "Cat food",
+        "sonstiges": "Other"
+      }
+    }
+  },
+  "services": {
+    "add_item": {
+      "name": "Add item",
+      "description": "Adds an item to the ShoppingHeld shopping list. Without a category ShoppingHeld detects it automatically; \"2 milk\" as text sets the amount automatically.",
+      "fields": {
+        "item": {
+          "name": "Item",
+          "description": "Name of the item."
+        },
+        "amount": {
+          "name": "Amount",
+          "description": "Quantity (1–99), default 1."
+        },
+        "unit": {
+          "name": "Unit",
+          "description": "Optional unit, e.g. pack."
+        },
+        "category": {
+          "name": "Category",
+          "description": "Optional; detected automatically if omitted."
+        }
+      }
+    }
+  }
+}
