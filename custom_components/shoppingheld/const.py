@@ -7,9 +7,11 @@ from datetime import timedelta
 DOMAIN = "shoppingheld"
 # Muss mit "version" in manifest.json übereinstimmen (wird für den Cache-Buster der Karte genutzt,
 # ein Test prüft die Übereinstimmung).
-VERSION = "0.1.2"
+VERSION = "0.1.3"
 
 CONF_URL = "url"
+# Vorbelegung der Server-Adresse im Einrichtungsformular (änderbar, z. B. für eine eigene Instanz)
+DEFAULT_URL = "https://shoppingheld.flohcloud.de"
 CONF_TOKEN = "token"
 
 SCAN_INTERVAL = timedelta(seconds=60)

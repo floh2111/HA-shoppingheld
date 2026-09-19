@@ -19,7 +19,7 @@ from .api import (
     ShoppingHeldError,
     normalize_url,
 )
-from .const import CONF_TOKEN, CONF_URL, DOMAIN
+from .const import CONF_TOKEN, CONF_URL, DEFAULT_URL, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -68,14 +68,14 @@ class ShoppingHeldConfigFlow(ConfigFlow, domain=DOMAIN):
                         data={CONF_URL: url, CONF_TOKEN: token},
                     )
 
-        schema = vol.Schema({vol.Required(CONF_URL): str, vol.Required(CONF_TOKEN): str})
+        # Adresse ist vorbelegt: normalerweise muss nur noch der Token eingetragen werden
+        schema = vol.Schema(
+            {vol.Required(CONF_URL, default=DEFAULT_URL): str, vol.Required(CONF_TOKEN): str}
+        )
         return self.async_show_form(
             step_id="user",
-            data_schema=self.add_suggested_values_to_schema(
-                schema, user_input or {CONF_URL: "https://"}
-            ),
+            data_schema=self.add_suggested_values_to_schema(schema, user_input or {}),
             errors=errors,
-            description_placeholders={"example": "https://shoppingheld.example.org"},
         )
 
     async def async_step_reauth(self, entry_data: Mapping[str, Any]) -> ConfigFlowResult:

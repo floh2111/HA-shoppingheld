@@ -11,7 +11,9 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.setup import async_setup_component
 
-from custom_components.shoppingheld.const import CONF_TOKEN, CONF_URL, DOMAIN
+from unittest.mock import patch
+
+from custom_components.shoppingheld.const import CONF_TOKEN, CONF_URL, DEFAULT_URL, DOMAIN
 
 from .conftest import BASE_URL, TOKEN, FakeServer
 
@@ -96,3 +98,19 @@ async def test_reauth_wrong_account(hass: HomeAssistant, server: FakeServer, con
     result = await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_TOKEN: TOKEN})
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "wrong_account"
+
+
+async def test_user_flow_url_is_prefilled(hass: HomeAssistant) -> None:
+    result = await _start(hass)
+    # Leere Eingabe validieren: fehlt die Adresse, muss die Vorbelegung eingesetzt werden
+    validated = result["data_schema"]({CONF_TOKEN: "shh_x"})
+    assert validated[CONF_URL] == DEFAULT_URL
+
+
+async def test_user_flow_only_token_needed(hass: HomeAssistant, server: FakeServer) -> None:
+    """Wird nur der Token eingegeben, gilt die vorbelegte Adresse."""
+    with patch("custom_components.shoppingheld.config_flow.DEFAULT_URL", BASE_URL):
+        result = await _start(hass)
+        result = await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_TOKEN: TOKEN})
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["data"] == {CONF_URL: BASE_URL, CONF_TOKEN: TOKEN}

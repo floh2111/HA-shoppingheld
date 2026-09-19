@@ -3,13 +3,13 @@
     "step": {
       "user": {
         "title": "Connect ShoppingHeld",
-        "description": "Enter the address of your ShoppingHeld instance and a personal access token. Create the token in the ShoppingHeld web app under Settings → User data → Home Assistant.",
+        "description": "Enter your personal access token. Create it in the ShoppingHeld web app under Settings → User data → Home Assistant. The server address is already filled in.",
         "data": {
           "url": "Server address",
           "token": "Access token"
         },
         "data_description": {
-          "url": "e.g. {example}"
+          "url": "Only change this if you run your own ShoppingHeld instance."
         }
       },
       "reauth_confirm": {

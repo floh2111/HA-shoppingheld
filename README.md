@@ -40,7 +40,7 @@ Assistant kopieren (z. B. über das Samba- oder SSH-Add-on) und neu starten.
    *Einstellungen → Benutzerdaten → 🏠 Home Assistant* auf „Neuen Token erzeugen“ tippen und den
    angezeigten Token kopieren (er wird nur einmal angezeigt).
 2. In Home Assistant **Einstellungen → Geräte & Dienste → Integration hinzufügen → ShoppingHeld**.
-3. Die **Adresse deiner ShoppingHeld-Instanz** und den Token eintragen.
+3. Den Token eintragen. Die Server-Adresse ist bereits vorausgefüllt und muss nur geändert werden, wenn du eine eigene ShoppingHeld-Instanz nutzt.
 
 Der Token erlaubt nur den Zugriff auf deine Einkaufsliste (Artikel lesen, hinzufügen, abhaken,
 löschen) – nicht auf dein Konto – und lässt sich in der App jederzeit widerrufen. Ist er ungültig,

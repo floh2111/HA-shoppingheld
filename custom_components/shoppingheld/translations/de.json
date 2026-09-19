@@ -3,13 +3,13 @@
     "step": {
       "user": {
         "title": "ShoppingHeld verbinden",
-        "description": "Trage die Adresse deiner ShoppingHeld-Instanz und einen persönlichen Zugangs-Token ein. Den Token erzeugst du in der ShoppingHeld-Web-App unter Einstellungen → Benutzerdaten → Home Assistant.",
+        "description": "Trage deinen persönlichen Zugangs-Token ein. Den Token erzeugst du in der ShoppingHeld-Web-App unter Einstellungen → Benutzerdaten → Home Assistant. Die Server-Adresse ist bereits vorausgefüllt.",
         "data": {
           "url": "Server-Adresse",
           "token": "Zugangs-Token"
         },
         "data_description": {
-          "url": "z. B. {example}"
+          "url": "Nur ändern, wenn du eine eigene ShoppingHeld-Instanz nutzt."
         }
       },
       "reauth_confirm": {
