@@ -103,6 +103,9 @@ PACK_SIZES: list[tuple[str, int, str]] = [
     (r"\breis\b|basmati|jasmin|langkorn", 500, "g"),
     (r"nudel|spaghetti|penne|fusilli|tagliatelle|pasta|makkaroni|spätzle", 500, "g"),
     (r"hackfleisch|gehacktes", 500, "g"),
+    (r"passierte tomaten|tomatenpassata|passata", 500, "g"),
+    (r"tomatenmark", 200, "g"),
+    (r"(stückige|gehackte|geschälte) tomaten|dosentomaten", 400, "g"),
     (r"salz", 500, "g"),
     (r"olivenöl|rapsöl|sonnenblumenöl|\böl\b|öl$", 500, "ml"),
     (r"essig", 500, "ml"),
@@ -117,6 +120,12 @@ _SKIP_NAMES = {
     "eiswürfel", "eis", "zutaten", "nach belieben", "nach geschmack",
 }
 # Namensumschreibungen
+# Küchengeräte und Ähnliches, das in Zutatenlisten auftaucht, aber nicht eingekauft wird
+_NON_FOOD = {
+    "topf", "kochtopf", "pfanne", "bratpfanne", "wok", "schüssel", "backblech", "blech", "springform", "auflaufform",
+    "form", "sieb", "pürierstab", "mixer", "messer", "schneidebrett", "backofen", "ofen", "herd", "teller", "löffel",
+    "gabel", "reibe", "waage", "küchenmaschine", "handrührgerät",
+}
 _ALIASES = [
     (re.compile(r"knoblauch(zehe|zehen|knolle)?"), "Knoblauch"),
     (re.compile(r"^(ei|eier)$"), "Eier"),
@@ -194,9 +203,31 @@ def _looks_like_note(line: str) -> bool:
     return not words[-1][:1].isupper()
 
 
+_SENTENCE_STARTS = ("du ", "ihr ", "man ", "tipp", "hinweis", "zubereitung", "anleitung", "schritt", "wichtig", "so geht")
+
+
+def _looks_like_sentence(line: str) -> bool:
+    """Ganze Sätze und GROSSBUCHSTABEN-Überschriften ("Du benötigst eine große Pfanne ...") sind keine Zutaten."""
+    words = line.split()
+    if len(words) >= 8 or line.lower().startswith(_SENTENCE_STARTS):
+        return True
+    if len(words) >= 5 and line.endswith((".", "!", "?")):
+        return True
+    return len(words) >= 3 and sum(c.isalpha() for c in line) > 5 and line == line.upper()
+
+
+def _split_and(name: str) -> list[str]:
+    """'Salz und Pfeffer' sind zwei Zutaten - 'Kaffee und Kuchen für Groß und Klein' aber nicht."""
+    parts = re.split(r"\s+und\s+", name)
+    if len(parts) == 2 and all(1 <= len(part.split()) <= 2 for part in parts):
+        return parts
+    return [name]
+
+
 def _clean_name(name: str) -> str:
     name = re.sub(r"(?<=\w)\(([a-zäöüß]{1,3})\)", r"\1", name)  # Ei(er) -> Eier, Zwiebel(n) -> Zwiebeln
     name = re.sub(r"\s*\([^)]*\)", "", name)  # weitere Klammern: (gehackt), (Typ 405)
+    name = re.split(r"\s+[-–—|]+\s+", name)[0]  # " - alternativ halb Rind", " - zum Servieren", " - Abtropfgewicht 250 g"
     name = name.split(",")[0]  # ", fein gehackt", ", Größe L"
     name = re.sub(r"\s+(nach (geschmack|belieben|bedarf)|zum [a-zäöüß]+|optional|etwas|evtl\.?)$", "", name, flags=re.I)
     name = re.sub(r"\s+", " ", name).strip(" .;:-–—")
@@ -211,10 +242,10 @@ def parse_recipe(text: str) -> list[Ingredient]:
 
     def add(name: str, quantity: float | None, unit: str | None) -> None:
         cleaned = _clean_name(name)
-        if not cleaned or cleaned.lower() in _SKIP_NAMES:
+        if not cleaned or cleaned.lower() in _SKIP_NAMES or cleaned.lower() in _NON_FOOD:
             return
         # "Salz und Pfeffer" ohne Menge sind zwei Zutaten
-        parts = [p for p in re.split(r"\s+und\s+", cleaned) if p] if quantity is None else [cleaned]
+        parts = _split_and(cleaned) if quantity is None else [cleaned]
         for part in parts:
             result.append(Ingredient(part[:1].upper() + part[1:], quantity, unit))
 
@@ -234,6 +265,9 @@ def parse_recipe(text: str) -> list[Ingredient]:
             pending, last_was_name = None, True
             continue
         # Zeile ohne Menge: Name (zum vorherigen Betrag) oder Notiz zur vorherigen Zutat
+        if _looks_like_sentence(re.split(r"\s+[-–—|]+\s+", line)[0]):  # nur der Teil vor einer " - Notiz"
+            pending, last_was_name = None, False
+            continue
         if pending is None and last_was_name and line[0].islower() and _looks_like_note(line):
             continue  # "wer mag, kann Vollkornmehl verwenden", "fettarme", "zum Backen" ...
         if pending is not None:

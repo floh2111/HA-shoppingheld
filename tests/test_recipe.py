@@ -144,6 +144,52 @@ def test_amounts_survive_odd_input() -> None:
     assert items("3 Eier\nEier") == [("Eier", 3, "")]
 
 
+# Rezept von emmikochteinfach.de: Notizen stehen hinter " - ", dazu ein Satz über die Pfanne
+EMMI = """Du benötigst eine große Pfanne mit hohem Rand oder einen weiten Topf
+500 g Rinderhackfleisch - alternativ halb Rind / halb Schwein (halb / halb)
+800 g passierte Tomaten - aus der Dose, Flasche oder Tetrapack
+1-2 Paprikaschoten, rot (ca. 250-300g gesamt) - in sehr kleine Würfel geschnitten
+1 große Knoblauchzehe - fein geschnitten
+1 Dose Kidneybohnen - Abtropfgewicht 250 g
+1 Dose Mais - Abtropfgewicht 140 g
+1 Zwiebel - fein geschnitten
+50 g Tomatenmark
+Salz
+1-2 TL Paprikapulver, edelsüß
+2 EL Olivenöl
+1/4 TL Cayennepfeffer
+1 Prise Zucker
+Tabasco Pepper Sauce - zum Servieren - für die Großen
+Creme Fraiche - zum Servieren - für Groß und Klein"""
+
+
+def test_notes_after_dash_and_sentences_are_dropped() -> None:
+    assert items(EMMI) == [('Rinderhackfleisch', 1, ''), ('Passierte Tomaten', 2, ''), ('Paprikaschoten', 2, ''), ('Knoblauch', 1, ''), ('Kidneybohnen', 1, 'Dose'), ('Mais', 1, 'Dose'), ('Zwiebel', 1, ''), ('Tomatenmark', 1, ''), ('Salz', 1, ''), ('Paprikapulver', 1, ''), ('Olivenöl', 1, ''), ('Cayennepfeffer', 1, ''), ('Zucker', 1, ''), ('Tabasco Pepper Sauce', 1, ''), ('Creme Fraiche', 1, '')]
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ('Tabasco Pepper Sauce - zum Servieren - für die Großen', [('Tabasco Pepper Sauce', 1, '')]),
+        ('Creme Fraiche - zum Servieren - für Groß und Klein', [('Creme Fraiche', 1, '')]),
+        ('1 Dose Kidneybohnen - Abtropfgewicht 250 g', [('Kidneybohnen', 1, 'Dose')]),
+        ('500 g Rinderhackfleisch - alternativ halb Rind / halb Schwein (halb / halb)', [('Rinderhackfleisch', 1, '')]),
+        ('800 g passierte Tomaten - aus der Dose, Flasche oder Tetrapack', [('Passierte Tomaten', 2, '')]),
+        ('50 g Tomatenmark', [('Tomatenmark', 1, '')]),
+        ('1 Zwiebel – fein geschnitten', [('Zwiebel', 1, '')]),
+        ('Du benötigst eine große Pfanne mit hohem Rand oder einen weiten Topf', []),
+        ('DU BENÖTIGST EINE GROSSE PFANNE', []),
+        ('Topf', []),
+        ('Zubereitung', []),
+        ('Salz und Pfeffer', [('Salz', 1, ''),
+        ('Pfeffer', 1, '')]),
+        ('Kaffee und Kuchen', [('Kaffee', 1, ''),
+        ('Kuchen', 1, '')])],
+)
+def test_notes_sentences_and_tools(text: str, expected: list[tuple[str, int, str]]) -> None:
+    assert items(text) == expected
+
+
 # --- Dienst ---------------------------------------------------------------------------------------
 async def test_add_recipe_service_adds_items_with_amounts(
     hass: HomeAssistant, setup_integration: MockConfigEntry, server: FakeServer
