@@ -38,20 +38,20 @@ async def test_next_shopping_day(
     entity_id = _entity_id(hass, setup_integration, "next_shopping_day")
 
     # Einkaufstage "5,6" = Freitag + Samstag. Samstag, 19.09.2026: heute zählt mit
-    freezer.move_to("2026-09-19 10:00:00+02:00")
+    freezer.move_to("2027-01-02 10:00:00+01:00")
     async_fire_time_changed(hass, dt_util.utcnow() + SCAN_INTERVAL)
     await hass.async_block_till_done()
     state = hass.states.get(entity_id)
-    assert state.state == "2026-09-19"
+    assert state.state == "2027-01-02"
     assert state.attributes["weekday"] == "Samstag"
     assert state.attributes["is_today"] is True and state.attributes["days_until"] == 0
 
-    # Sonntag, 20.09.2026: nächster ist Freitag, 25.09.
-    freezer.move_to("2026-09-20 10:00:00+02:00")
+    # Sonntag, 03.01.2027: nächster ist Freitag, 08.01.
+    freezer.move_to("2027-01-03 10:00:00+01:00")
     async_fire_time_changed(hass, dt_util.utcnow() + 2 * SCAN_INTERVAL)
     await hass.async_block_till_done()
     state = hass.states.get(entity_id)
-    assert state.state == "2026-09-25"
+    assert state.state == "2027-01-08"
     assert state.attributes["weekday"] == "Freitag"
     assert state.attributes["days_until"] == 5 and state.attributes["is_today"] is False
     assert date.fromisoformat(state.state).weekday() == 4

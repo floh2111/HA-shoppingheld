@@ -115,6 +115,20 @@
           "description": "Neue Anzahl (1–99)."
         }
       }
+    },
+    "add_recipe": {
+      "name": "Rezept auf die Liste",
+      "description": "Liest Zutaten aus einem Rezepttext (auch mit Menge und Name in getrennten Zeilen, z. B. von Chefkoch) und setzt sie mit sinnvollen Mengen auf die Liste: 1200 ml Milch werden zu 2 Milch, 3 große Eier zu 3 Eier, 400 g Mehl zu 1 Mehl.",
+      "fields": {
+        "text": {
+          "name": "Text",
+          "description": "Der kopierte Zutatentext."
+        },
+        "dry_run": {
+          "name": "Nur anzeigen",
+          "description": "Nichts hinzufügen, nur die erkannten Artikel zurückgeben."
+        }
+      }
     }
   },
   "options": {

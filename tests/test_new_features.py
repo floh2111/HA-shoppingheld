@@ -121,23 +121,23 @@ async def test_shopping_day_binary_sensors(
     today = _entity_id(hass, setup_integration, "binary_sensor", "shopping_day_today")
     tomorrow = _entity_id(hass, setup_integration, "binary_sensor", "shopping_day_tomorrow")
 
-    # Einkaufstage "5,6" = Freitag + Samstag. Donnerstag, 24.09.2026
+    # Einkaufstage "5,6" = Freitag + Samstag. Donnerstag, 07.01.2027
     # (Zeitpunkte liegen nach "jetzt", sonst löst der Test-Helfer den geplanten Abruf nicht aus)
-    freezer.move_to("2026-09-24 10:00:00+02:00")
+    freezer.move_to("2027-01-07 10:00:00+01:00")
     async_fire_time_changed(hass, dt_util.utcnow() + MINUTE)
     await hass.async_block_till_done()
     assert hass.states.get(today).state == "off"
     assert hass.states.get(tomorrow).state == "on"  # morgen ist Freitag
 
     # Freitag
-    freezer.move_to("2026-09-25 10:00:00+02:00")
+    freezer.move_to("2027-01-08 10:00:00+01:00")
     async_fire_time_changed(hass, dt_util.utcnow() + 2 * MINUTE)
     await hass.async_block_till_done()
     assert hass.states.get(today).state == "on"
     assert hass.states.get(tomorrow).state == "on"  # Samstag
 
     # Sonntag
-    freezer.move_to("2026-09-27 10:00:00+02:00")
+    freezer.move_to("2027-01-10 10:00:00+01:00")
     async_fire_time_changed(hass, dt_util.utcnow() + 3 * MINUTE)
     await hass.async_block_till_done()
     assert hass.states.get(today).state == "off"
@@ -149,7 +149,7 @@ async def test_binary_sensor_flips_at_midnight_without_server_poll(
 ) -> None:
     await hass.config.async_set_time_zone("Europe/Berlin")
     today = _entity_id(hass, setup_integration, "binary_sensor", "shopping_day_today")
-    freezer.move_to("2026-09-24 23:59:00+02:00")  # Donnerstag
+    freezer.move_to("2027-01-07 23:59:00+01:00")  # Donnerstag
     async_fire_time_changed(hass, dt_util.utcnow())
     await hass.async_block_till_done()
     assert hass.states.get(today).state == "off"
@@ -159,7 +159,7 @@ async def test_binary_sensor_flips_at_midnight_without_server_poll(
     coordinator.update_interval = None
     coordinator._unschedule_refresh()
     requests_before = aioclient_mock.call_count
-    freezer.move_to("2026-09-25 00:00:10+02:00")  # kurz nach Mitternacht, Freitag
+    freezer.move_to("2027-01-08 00:00:10+01:00")  # kurz nach Mitternacht, Freitag
     async_fire_time_changed(hass, dt_util.utcnow())
     await hass.async_block_till_done()
     assert hass.states.get(today).state == "on"

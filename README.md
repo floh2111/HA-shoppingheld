@@ -132,6 +132,69 @@ automation:
           message: "Neu auf der Einkaufsliste: {{ trigger.event.data.amount }}× {{ trigger.event.data.text }}"
 ```
 
+## Rezepte auf die Liste: `shoppingheld.add_recipe`
+
+Kopierten Rezepttext (z. B. die Zutatentabelle einer Rezeptseite) in Einkaufsartikel mit **sinnvollen Mengen**
+umwandeln. Es funktioniert auch, wenn Menge und Name – wie bei Chefkoch – in **getrennten Zeilen** stehen.
+Notizen („wer mag, kann …“, „zum Backen“), Überschriften („Für den Teig:“) und Wasser werden weggelassen.
+
+| Im Rezept | Auf der Liste | Warum |
+|---|---|---|
+| `1200 ml` / `Milch` | **2 Milch** | Packungen zu 1 Liter |
+| `750 ml Milch` | 1 Milch | 1 Packung reicht |
+| `3 große` / `Ei(er), Größe L` | **3 Eier** | Stückware bleibt Stückware |
+| `400 g` / `Mehl` | 1 Mehl | Packung zu 1 kg |
+| `200 g Butter` / `300 g Butter` | 1 / 2 Butter | Packung zu 250 g |
+| `1 Prise(n)` / `Salz` | 1 Salz | kleine Mengen = einmal kaufen |
+| `500 g Tomaten` | 500 g Tomaten | Frischware ohne feste Packung behält die Menge |
+| `2 Dosen Tomaten (gehackt)` | 2 Dosen Tomaten | Gebinde bleiben als Einheit |
+| `Knoblauchzehen`, `½ Bund Petersilie` | Knoblauch, 1 Bund Petersilie | |
+
+Gleiche Zutaten werden **vor** dem Umrechnen zusammengezählt (200 g + 300 g Mehl = 1 Packung, nicht 2).
+Die hinterlegten Packungsgrößen (Milch 1 l, Sahne 200 ml, Butter 250 g, Mehl/Zucker 1 kg, Nudeln/Reis 500 g,
+Hackfleisch 500 g, Quark 250 g, Joghurt 500 g, Käse 200 g u. a.) stehen in `recipe.py` (`PACK_SIZES`).
+
+```yaml
+action: shoppingheld.add_recipe
+target:
+  entity_id: todo.shoppingheld_einkaufsliste
+data:
+  text: |
+    400 g Mehl
+    3 große Eier
+    1200 ml Milch
+  dry_run: false      # true = nichts hinzufügen, nur die erkannten Artikel zurückgeben
+response_variable: ergebnis   # ergebnis.summary, ergebnis.items, ergebnis.added
+```
+
+### Aus dem iPhone-Teilen-Menü
+
+Ein Kurzbefehl schickt den markierten Text an einen Webhook, eine Automation ruft den Dienst auf:
+
+```yaml
+alias: "Rezept auf die Einkaufsliste"
+triggers:
+  - trigger: webhook
+    webhook_id: <langes-zufälliges-geheimnis>
+    allowed_methods: [POST]
+    local_only: false
+actions:
+  - action: shoppingheld.add_recipe
+    target:
+      entity_id: todo.shoppingheld_einkaufsliste
+    data:
+      text: "{{ trigger.json.text | default('') }}"
+    response_variable: rezept
+  - action: notify.mobile_app_<dein_handy>
+    data:
+      message: "Auf der Liste: {{ rezept['todo.shoppingheld_einkaufsliste'].summary }}"
+```
+
+Im Kurzbefehl (Aktion *Inhalt von URL abrufen*, Methode POST, Anfragetext JSON) das Feld `text` mit dem geteilten
+Text füllen. Der Text wird **nicht** vorher zeilenweise zerlegt – das übernimmt die Integration.
+
+Grenzen: höchstens 8000 Zeichen und 60 Artikel je Aufruf. Mengen werden nicht auf Portionen umgerechnet.
+
 ## Beispiel-Automation
 
 Erinnerung am Einkaufstag, solange noch etwas offen ist:

@@ -115,6 +115,20 @@
           "description": "New amount (1–99)."
         }
       }
+    },
+    "add_recipe": {
+      "name": "Recipe to list",
+      "description": "Reads ingredients from recipe text (also when quantity and name are on separate lines) and adds them with sensible amounts: 1200 ml milk becomes 2 milk, 3 large eggs 3 eggs, 400 g flour 1 flour.",
+      "fields": {
+        "text": {
+          "name": "Text",
+          "description": "The copied ingredient text."
+        },
+        "dry_run": {
+          "name": "Preview only",
+          "description": "Add nothing, just return the recognised items."
+        }
+      }
     }
   },
   "options": {

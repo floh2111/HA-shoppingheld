@@ -12,12 +12,13 @@ from homeassistant.components.todo import (
     TodoListEntity,
     TodoListEntityFeature,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, ServiceResponse, SupportsResponse
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import config_validation as cv, entity_platform
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .api import ShoppingHeldError, format_summary, parse_item_text
+from .recipe import recipe_to_items
 from .const import CATEGORIES, CATEGORY_LABELS, DEFAULT_CATEGORY, DOMAIN
 from .coordinator import ShoppingHeldConfigEntry, ShoppingHeldCoordinator
 from .entity import ShoppingHeldEntity
@@ -30,6 +31,13 @@ ADD_ITEM_SCHEMA: dict[Any, Any] = {
     vol.Optional("unit"): cv.string,
     vol.Optional("category"): vol.In(CATEGORIES),
 }
+
+ADD_RECIPE_SCHEMA: dict[Any, Any] = {
+    vol.Required("text"): cv.string,
+    vol.Optional("dry_run", default=False): cv.boolean,
+}
+MAX_RECIPE_CHARS = 8000
+MAX_RECIPE_ITEMS = 60
 
 SET_AMOUNT_SCHEMA: dict[Any, Any] = {
     vol.Required("item"): cv.string,
@@ -47,6 +55,9 @@ async def async_setup_entry(
     platform = entity_platform.async_get_current_platform()
     platform.async_register_entity_service("add_item", ADD_ITEM_SCHEMA, "async_add_item_service")
     platform.async_register_entity_service("set_amount", SET_AMOUNT_SCHEMA, "async_set_amount_service")
+    platform.async_register_entity_service(
+        "add_recipe", ADD_RECIPE_SCHEMA, "async_add_recipe_service", supports_response=SupportsResponse.OPTIONAL
+    )
 
 
 class ShoppingHeldTodoList(ShoppingHeldEntity, TodoListEntity):
@@ -135,6 +146,38 @@ class ShoppingHeldTodoList(ShoppingHeldEntity, TodoListEntity):
         if amount is None:
             amount, item = parse_item_text(item)
         await self._add(item, amount, unit, category)
+
+    async def async_add_recipe_service(self, text: str, dry_run: bool = False) -> ServiceResponse:
+        """Service shoppingheld.add_recipe: Zutaten aus Rezepttext mit sinnvollen Mengen auf die Liste setzen."""
+        if len(text) > MAX_RECIPE_CHARS:
+            raise ServiceValidationError(f"Der Text ist zu lang (höchstens {MAX_RECIPE_CHARS} Zeichen).")
+        items = recipe_to_items(text)[:MAX_RECIPE_ITEMS]
+        if not items:
+            raise ServiceValidationError("Im Text wurden keine Zutaten gefunden.")
+        added = 0
+        if not dry_run:
+            client = self.coordinator.client
+            try:
+                for item in items:
+                    category = await client.async_guess_category(item.text)
+                    await client.async_add_item(item.text, item.amount, category, item.unit or None)
+                    added += 1
+            except ShoppingHeldError as err:
+                if added:
+                    await self.coordinator.async_refresh()
+                raise HomeAssistantError(
+                    f"Nach {added} von {len(items)} Artikeln abgebrochen: {err}"
+                ) from err
+            await self.coordinator.async_refresh()
+        entries = [
+            {"text": i.text, "amount": i.amount, "unit": i.unit, "summary": format_summary(i.__dict__)} for i in items
+        ]
+        return {
+            "added": 0 if dry_run else added,
+            "dry_run": dry_run,
+            "items": entries,
+            "summary": ", ".join(e["summary"] for e in entries),
+        }
 
     async def async_set_amount_service(self, item: str, amount: int) -> None:
         """Service shoppingheld.set_amount: Menge eines Artikels (per ID oder Name) ändern."""
